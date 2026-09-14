@@ -76,15 +76,13 @@
     const upload = document.getElementById('upload');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    // 🔴 ĐƯỜNG DẪN ĐẾN KHUNG PNG CỦA BẠN (Thay bằng URL khung của bạn sau khi host)
     const FRAME_SRC = 'frame.png'; 
 
     let userImage = null;
     let frameImage = new Image();
-    frameImage.crossOrigin = "anonymous";
+    
+    // Tải khung trước
     frameImage.src = FRAME_SRC;
-
-    // Vẽ khung mặc định khi load trang
     frameImage.onload = () => {
         drawCanvas();
     };
@@ -106,33 +104,33 @@
     });
 
     function drawCanvas() {
-        // Xóa canvas cũ
+        // 1. Xóa sạch Canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. Vẽ ảnh người dùng (nếu có)
+        // 2. Vẽ NỀN TRẮNG mặc định (để tránh bị đen/lỗi hiển thị)
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 3. Vẽ ẢNH NGƯỜI DÙNG nằm ở LỚP DƯỚI
         if (userImage) {
-            // Tự động căn giữa và crop ảnh người dùng theo hình vuông 800x800
+            // Tự động căn chỉnh và crop tỉ lệ 1:1 theo kích thước canvas
             let minDim = Math.min(userImage.width, userImage.height);
             let sx = (userImage.width - minDim) / 2;
             let sy = (userImage.height - minDim) / 2;
             ctx.drawImage(userImage, sx, sy, minDim, minDim, 0, 0, canvas.width, canvas.height);
         } else {
-            // Hiển thị chữ hướng dẫn nếu chưa chọn ảnh
-            ctx.fillStyle = "#cccccc";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#666666";
             ctx.font = "30px Arial";
             ctx.textAlign = "center";
             ctx.fillText("Chưa chọn ảnh", canvas.width / 2, canvas.height / 2);
         }
 
-        // 2. Vẽ khung đè lên trên
-        if (frameImage.complete) {
+        // 4. Vẽ KHUNG PNG đè lên LỚP TRÊN
+        if (frameImage.complete && frameImage.naturalWidth !== 0) {
             ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
         }
     }
 
-    // Tải ảnh về máy
     downloadBtn.addEventListener('click', () => {
         const link = document.createElement('a');
         link.download = 'avatar-moi.png';
