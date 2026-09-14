@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Avatar Cùng Khung Kỷ Niệm</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+        }
+        h2 { color: #333; margin-bottom: 20px; }
+        .canvas-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #eee;
+        }
+        canvas { width: 100%; height: 100%; }
+        input[type="file"] { display: none; }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            border: none;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #0056b3; }
+        .btn-download { background-color: #28a745; display: none; }
+        .btn-download:hover { background-color: #218838; }
+        p { font-size: 13px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tạo Ảnh Đại Diện</h2>
+    
+    <div class="canvas-container">
+        <canvas id="avatarCanvas" width="800" height="800"></canvas>
+    </div>
+
+    <label for="upload" class="btn">📸 Chọn ảnh của bạn</label>
+    <input type="file" id="upload" accept="image/*">
+    
+    <button id="downloadBtn" class="btn btn-download">📥 Tải ảnh về</button>
+    <p>* Mẹo: Ảnh tải về sẽ có chất lượng cao nhất để làm Avatar.</p>
+</div>
+
+<script>
+    const canvas = document.getElementById('avatarCanvas');
+    const ctx = canvas.getContext('2d');
+    const upload = document.getElementById('upload');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // 🔴 ĐƯỜNG DẪN ĐẾN KHUNG PNG CỦA BẠN (Thay bằng URL khung của bạn sau khi host)
+    const FRAME_SRC = 'frame.png'; 
+
+    let userImage = null;
+    let frameImage = new Image();
+    frameImage.crossOrigin = "anonymous";
+    frameImage.src = FRAME_SRC;
+
+    // Vẽ khung mặc định khi load trang
+    frameImage.onload = () => {
+        drawCanvas();
+    };
+
+    upload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                userImage = new Image();
+                userImage.onload = () => {
+                    drawCanvas();
+                    downloadBtn.style.display = 'inline-block';
+                };
+                userImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    function drawCanvas() {
+        // Xóa canvas cũ
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Vẽ ảnh người dùng (nếu có)
+        if (userImage) {
+            // Tự động căn giữa và crop ảnh người dùng theo hình vuông 800x800
+            let minDim = Math.min(userImage.width, userImage.height);
+            let sx = (userImage.width - minDim) / 2;
+            let sy = (userImage.height - minDim) / 2;
+            ctx.drawImage(userImage, sx, sy, minDim, minDim, 0, 0, canvas.width, canvas.height);
+        } else {
+            // Hiển thị chữ hướng dẫn nếu chưa chọn ảnh
+            ctx.fillStyle = "#cccccc";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#666666";
+            ctx.font = "30px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Chưa chọn ảnh", canvas.width / 2, canvas.height / 2);
+        }
+
+        // 2. Vẽ khung đè lên trên
+        if (frameImage.complete) {
+            ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // Tải ảnh về máy
+    downloadBtn.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'avatar-moi.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+</script>
+
+</body>
+</html>
