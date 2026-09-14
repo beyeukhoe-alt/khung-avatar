@@ -80,13 +80,14 @@
 
     let userImage = null;
     let frameImage = new Image();
-    
-    // Tải khung trước
-    frameImage.src = FRAME_SRC;
+
+    // Tải ảnh khung PNG
     frameImage.onload = () => {
         drawCanvas();
     };
+    frameImage.src = FRAME_SRC;
 
+    // Lắng nghe sự kiện người dùng chọn ảnh
     upload.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -104,33 +105,31 @@
     });
 
     function drawCanvas() {
-        // 1. Xóa sạch Canvas
+        // Xóa nét vẽ cũ
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 2. Vẽ NỀN TRẮNG mặc định (để tránh bị đen/lỗi hiển thị)
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 3. Vẽ ẢNH NGƯỜI DÙNG nằm ở LỚP DƯỚI
+        // 1. LỚP 1: Vẽ ảnh người dùng (nằm ở dưới)
         if (userImage) {
-            // Tự động căn chỉnh và crop tỉ lệ 1:1 theo kích thước canvas
             let minDim = Math.min(userImage.width, userImage.height);
             let sx = (userImage.width - minDim) / 2;
             let sy = (userImage.height - minDim) / 2;
             ctx.drawImage(userImage, sx, sy, minDim, minDim, 0, 0, canvas.width, canvas.height);
         } else {
+            ctx.fillStyle = "#e0e0e0";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "#666666";
-            ctx.font = "30px Arial";
+            ctx.font = "32px Arial";
             ctx.textAlign = "center";
             ctx.fillText("Chưa chọn ảnh", canvas.width / 2, canvas.height / 2);
         }
 
-        // 4. Vẽ KHUNG PNG đè lên LỚP TRÊN
+        // 2. LỚP 2: Vẽ khung đè lên phía trên
         if (frameImage.complete && frameImage.naturalWidth !== 0) {
             ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
         }
     }
 
+    // Nút tải ảnh
     downloadBtn.addEventListener('click', () => {
         const link = document.createElement('a');
         link.download = 'avatar-moi.png';
